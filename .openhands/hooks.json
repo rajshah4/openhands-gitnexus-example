@@ -1,0 +1,15 @@
+{
+  "user_prompt_submit": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "name": "gitnexus-context-smoke",
+          "command": ".openhands/hooks/gitnexus_prompt_context.sh",
+          "timeout": 20
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+flowchart LR
+    user["Engineer"]
+    canvas["OpenHands Agent Canvas"]
+    agent["OpenHands Agent Server<br/>configured LLM"]
+    mcp["MCP servers"]
+    gitnexus["GitNexus MCP"]
+    repos["Local repositories"]
+    automation["Automation backend"]
+    output["Briefs, plans, PRs, reports"]
+
+    user --> canvas
+    canvas --> agent
+    canvas --> mcp
+    mcp --> gitnexus
+    gitnexus --> repos
+    canvas --> automation
+    agent --> output
+    automation --> output

@@ -1,0 +1,9 @@
+.env
+.local/
+.openhands/gitnexus-hook-events.log
+.gitnexus/
+demo.env
+demo-projects/
+example-projects/
+*.log
+.DS_Store
