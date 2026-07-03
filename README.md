@@ -45,7 +45,6 @@ validation.
 | `README.md` | Overview and setup. |
 | `.env.example` | Local configuration template. |
 | `.openhands/` | Optional OpenHands hook example. |
-| `assets/` | Mermaid diagram source. |
 | `prompts/` | Reusable OpenHands prompts that ask the agent to use GitNexus context. |
 | `results/` | Place for sanitized, repeatable command outputs. |
 | `scenarios/` | Scenario notes, including the large-repo navigation example. |
