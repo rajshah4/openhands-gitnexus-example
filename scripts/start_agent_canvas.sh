@@ -11,6 +11,8 @@ fi
 WORKSPACE_ROOT="$(cd "$EXAMPLE_ROOT/.." && pwd)"
 AGENT_CANVAS_DIR="${AGENT_CANVAS_DIR:-$WORKSPACE_ROOT/openhands-agent-canvas}"
 USE_SOURCE="${USE_SOURCE:-0}"
+AGENT_CANVAS_PACKAGE="${AGENT_CANVAS_PACKAGE:-@openhands/agent-canvas@latest}"
+OH_AGENT_SERVER_VERSION="${OH_AGENT_SERVER_VERSION:-1.31.0}"
 
 if [ "$USE_SOURCE" = "1" ]; then
   if [ ! -d "$AGENT_CANVAS_DIR" ]; then
@@ -31,6 +33,10 @@ if [ "$USE_SOURCE" = "1" ]; then
   exec npm run dev
 fi
 
-echo "Starting published Agent Canvas package through npx."
+echo "Starting published Agent Canvas package through npx:"
+echo "  $AGENT_CANVAS_PACKAGE"
+echo "OpenHands Agent Server version:"
+echo "  $OH_AGENT_SERVER_VERSION"
 echo "UI: http://localhost:8000"
-exec npx -y @openhands/agent-canvas@latest
+export OH_AGENT_SERVER_VERSION
+exec npx -y "$AGENT_CANVAS_PACKAGE"

@@ -12,6 +12,9 @@ WORKSPACE_ROOT="$(cd "$EXAMPLE_ROOT/.." && pwd)"
 PROJECTS_DIR="${PROJECTS_DIR:-$WORKSPACE_ROOT/example-projects}"
 AGENT_CANVAS_DIR="${AGENT_CANVAS_DIR:-$WORKSPACE_ROOT/openhands-agent-canvas}"
 SOFTWARE_AGENT_SDK_DIR="${SOFTWARE_AGENT_SDK_DIR:-$PROJECTS_DIR/software-agent-sdk}"
+USE_SOURCE="${USE_SOURCE:-0}"
+AGENT_CANVAS_PACKAGE="${AGENT_CANVAS_PACKAGE:-@openhands/agent-canvas@latest}"
+OH_AGENT_SERVER_VERSION="${OH_AGENT_SERVER_VERSION:-1.31.0}"
 
 missing=0
 
@@ -47,16 +50,25 @@ fi
 
 echo
 
-agent_canvas_ready=0
+agent_canvas_ready=1
 sdk_ready=0
 agent_canvas_indexed=0
 sdk_indexed=0
 
-if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
-  echo "ok   agent-canvas checkout: $AGENT_CANVAS_DIR"
-  agent_canvas_ready=1
+if [ "$USE_SOURCE" = "1" ]; then
+  agent_canvas_ready=0
+  if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
+    echo "ok   agent-canvas source checkout: $AGENT_CANVAS_DIR"
+    agent_canvas_ready=1
+  else
+    echo "miss agent-canvas source checkout: $AGENT_CANVAS_DIR"
+  fi
 else
-  echo "miss agent-canvas checkout: $AGENT_CANVAS_DIR"
+  echo "ok   agent-canvas published package path: npx $AGENT_CANVAS_PACKAGE"
+  echo "ok   openhands-agent-server version: $OH_AGENT_SERVER_VERSION"
+  if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
+    echo "info optional agent-canvas checkout also exists: $AGENT_CANVAS_DIR"
+  fi
 fi
 
 if [ -d "$SOFTWARE_AGENT_SDK_DIR/.git" ]; then
@@ -66,11 +78,15 @@ else
   echo "info software-agent-sdk checkout not found yet: $SOFTWARE_AGENT_SDK_DIR"
 fi
 
-if [ -d "$AGENT_CANVAS_DIR/.gitnexus" ]; then
-  echo "ok   GitNexus index found for agent-canvas"
-  agent_canvas_indexed=1
+if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
+  if [ -d "$AGENT_CANVAS_DIR/.gitnexus" ]; then
+    echo "ok   GitNexus index found for agent-canvas"
+    agent_canvas_indexed=1
+  else
+    echo "info GitNexus index not found for agent-canvas"
+  fi
 else
-  echo "info GitNexus index not found for agent-canvas"
+  agent_canvas_indexed=1
 fi
 
 if [ -d "$SOFTWARE_AGENT_SDK_DIR/.gitnexus" ]; then

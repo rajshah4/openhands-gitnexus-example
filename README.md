@@ -61,7 +61,8 @@ outputs belong in ignored paths such as `.local/`, `.env`, and
 - `npm` / `npx`
 - `uv`
 - `git`
-- an OpenHands Agent Canvas setup with an LLM configured
+- OpenHands Agent Canvas backed by OpenHands `1.31.0` or newer
+- an LLM configured in Agent Canvas
 
 ## Quick Start
 
@@ -77,7 +78,8 @@ Check local prerequisites:
 ./scripts/check_example.sh
 ```
 
-Clone or verify the reference OpenHands repositories:
+Optionally clone the reference OpenHands repositories if you want to index them
+as local GitNexus targets:
 
 ```bash
 ./scripts/setup_example.sh
@@ -89,11 +91,16 @@ Index the repositories with GitNexus:
 ./scripts/index_repos.sh
 ```
 
-Start Agent Canvas:
+Start Agent Canvas from the published package:
 
 ```bash
 ./scripts/start_agent_canvas.sh
 ```
+
+The default Agent Canvas package is `@openhands/agent-canvas@latest`. The script
+also sets `OH_AGENT_SERVER_VERSION=1.31.0` because the MCP compatibility fix
+lives in the OpenHands Agent Server / SDK package. To pin either value, set
+`AGENT_CANVAS_PACKAGE` or `OH_AGENT_SERVER_VERSION` in `.env`.
 
 Agent Canvas should be available at:
 
@@ -122,17 +129,31 @@ mcp
 
 If the UI has a test action, run it and save the server.
 
+You can also smoke test the released OpenHands + GitNexus MCP path from this
+repo after Agent Canvas is running:
+
+```bash
+./scripts/test_gitnexus_mcp.sh
+```
+
+The smoke test uses Agent Canvas' local MCP test endpoint. It verifies GitNexus
+tool discovery, calls `context` with `kind: "Method"`, and calls `impact` with
+`kind: "Function"` against the VS Code scenario.
+
 ## OpenHands MCP Compatibility Note
 
 OpenHands MCP support depends on the `software-agent-sdk` version used by Agent
-Canvas. If your installed OpenHands package predates the MCP argument alias fix,
-GitNexus tools may appear during discovery but fail when a tool call sends
-arguments whose MCP names differ from the SDK's internal field names.
+Canvas. Use OpenHands `1.31.0` or newer for GitNexus MCP tools whose schemas
+include an argument named `kind`.
 
-If that happens, run Agent Canvas from a source checkout that includes the MCP
-fix, or use the next published OpenHands package that includes it. Once your
-OpenHands install includes that SDK change, the standard GitNexus MCP
-configuration above should be enough.
+The `1.31.0` release includes the MCP argument alias fix from
+[OpenHands/software-agent-sdk#3803](https://github.com/OpenHands/software-agent-sdk/pull/3803).
+Without that fix, GitNexus tools can appear during discovery but fail when a
+tool call sends a valid MCP argument named `kind`, because older OpenHands SDK
+versions could collide with their internal discriminator field.
+
+With OpenHands `1.31.0` or newer, the standard GitNexus MCP configuration above
+should be enough.
 
 ## Prompt OpenHands To Use GitNexus
 
