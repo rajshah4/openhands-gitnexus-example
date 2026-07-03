@@ -12,6 +12,7 @@ fi
 AGENT_CANVAS_URL="${AGENT_CANVAS_URL:-http://127.0.0.1:8000}"
 AGENT_CANVAS_STATE_DIR="${AGENT_CANVAS_STATE_DIR:-$HOME/.openhands/agent-canvas}"
 GITNEXUS_SKIP_OPTIONAL_GRAMMARS="${GITNEXUS_SKIP_OPTIONAL_GRAMMARS:-1}"
+GITNEXUS_REPO_ALIAS="${GITNEXUS_REPO_ALIAS:-vscode-benchmark-repo}"
 
 require_command() {
   local name="$1"
@@ -94,34 +95,36 @@ if [ "$repo_count" -eq 0 ]; then
 fi
 jq -r '.repositories[] | "ok   repo: \(.name) files=\(.stats.files) nodes=\(.stats.nodes) edges=\(.stats.edges)"' <<<"$repos_json"
 
-context_response="$(
-  post_mcp_test '{
-    "name": "context",
-    "arguments": {
-      "repo": "vscode-benchmark-repo",
-      "name": "executeCommand",
-      "kind": "Method",
-      "file_path": "src/vs/workbench/services/commands/common/commandService.ts"
+context_call="$(
+  jq -n --arg repo "$GITNEXUS_REPO_ALIAS" '{
+    name: "context",
+    arguments: {
+      repo: $repo,
+      name: "executeCommand",
+      kind: "Method",
+      file_path: "src/vs/workbench/services/commands/common/commandService.ts"
     }
   }'
 )"
+context_response="$(post_mcp_test "$context_call")"
 context_json="$(jq -r '.tool_result.text' <<<"$context_response" | json_block)"
 jq -r '"ok   context: \(.symbol.kind) \(.symbol.uid) lines \(.symbol.startLine)-\(.symbol.endLine)"' <<<"$context_json"
 
-impact_response="$(
-  post_mcp_test '{
-    "name": "impact",
-    "arguments": {
-      "repo": "vscode-benchmark-repo",
-      "target": "localize",
-      "kind": "Function",
-      "file_path": "src/vs/nls.ts",
-      "direction": "upstream",
-      "maxDepth": 2,
-      "summaryOnly": true
+impact_call="$(
+  jq -n --arg repo "$GITNEXUS_REPO_ALIAS" '{
+    name: "impact",
+    arguments: {
+      repo: $repo,
+      target: "localize",
+      kind: "Function",
+      file_path: "src/vs/nls.ts",
+      direction: "upstream",
+      maxDepth: 2,
+      summaryOnly: true
     }
   }'
 )"
+impact_response="$(post_mcp_test "$impact_call")"
 impact_json="$(jq -r '.tool_result.text' <<<"$impact_response" | json_block)"
 jq -r '"ok   impact: risk=\(.risk) impacted=\(.impactedCount) direct=\(.summary.direct) modules=\(.summary.modules_affected)"' <<<"$impact_json"
 

@@ -9,7 +9,7 @@ if [ -f "$EXAMPLE_ROOT/.env" ]; then
   set +a
 fi
 
-REPO_ALIAS="${1:-vscode-benchmark-repo}"
+REPO_ALIAS="${1:-${GITNEXUS_REPO_ALIAS:-vscode-benchmark-repo}}"
 REPO_PATH="${2:-${VSCODE_REPO_DIR:-}}"
 QUERY="${3:-extension activation command registration execute command}"
 

@@ -12,8 +12,8 @@ It shows three integration patterns:
   an agent turn starts
 
 The repository is intentionally small. It contains setup scripts, reusable
-prompts, and notes for a large-repository scenario. It is not a fork of
-GitNexus, OpenHands, or VS Code.
+prompts, and a worked VS Code example. It is not a fork of GitNexus, OpenHands,
+or VS Code.
 
 ## Why This Is Useful
 
@@ -35,7 +35,7 @@ validation.
 2. Add GitNexus as a custom MCP server.
 3. Index one or more local repositories with GitNexus.
 4. Ask OpenHands to use GitNexus before broad manual search.
-5. Compare plain text search with a GitNexus graph-backed query.
+5. Walk through a VS Code example that compares plain search with GitNexus.
 6. Optionally inspect the included OpenHands hook pattern.
 
 ## Repository Layout
@@ -45,9 +45,8 @@ validation.
 | `README.md` | Overview and setup. |
 | `.env.example` | Local configuration template. |
 | `.openhands/` | Optional OpenHands hook example. |
+| `examples/` | Worked examples, including VS Code / Code OSS. |
 | `prompts/` | Reusable OpenHands prompts that ask the agent to use GitNexus context. |
-| `results/` | Place for sanitized, repeatable command outputs. |
-| `scenarios/` | Scenario notes, including the large-repo navigation example. |
 | `scripts/` | Setup, preflight, indexing, and startup helpers. |
 
 Local notes, personal environment files, cloned repositories, and scratch
@@ -137,7 +136,7 @@ repo after Agent Canvas is running:
 
 The smoke test uses Agent Canvas' local MCP test endpoint. It verifies GitNexus
 tool discovery, calls `context` with `kind: "Method"`, and calls `impact` with
-`kind: "Function"` against the VS Code scenario.
+`kind: "Function"` against the VS Code example.
 
 ## OpenHands MCP Compatibility Note
 
@@ -166,16 +165,20 @@ They are written to work whether GitNexus MCP is available or not. When GitNexus
 is available, the prompts ask OpenHands to use it before falling back to manual
 file inspection.
 
-## Large-Repo Query Comparison
+## Worked Example: VS Code
 
-The `scripts/compare_query.sh` helper compares plain repository text search
-with a GitNexus graph-backed query.
+See [examples/vscode.md](examples/vscode.md) for the full setup and query
+walkthrough.
 
-To use the VS Code / Code OSS scenario, set `VSCODE_REPO_DIR` in `.env` to your
-local checkout and make sure GitNexus has indexed it with the alias
-`vscode-benchmark-repo`.
+The example shows how to:
 
-Run the comparison:
+- index a local VS Code / Code OSS checkout as `vscode-benchmark-repo`
+- configure GitNexus as an OpenHands MCP server
+- compare plain text search with a GitNexus graph-backed query
+- inspect `CommandService.executeCommand` with symbol context
+- run blast-radius analysis on `localize`
+
+The quick comparison helper is:
 
 ```bash
 ./scripts/compare_query.sh vscode-benchmark-repo "$VSCODE_REPO_DIR" \
@@ -188,8 +191,8 @@ In the local run this question produced:
 - GitNexus: `CommandService.executeCommand` in
   `src/vs/workbench/services/commands/common/commandService.ts`
 
-Follow-up GitNexus commands such as `context` and `impact` can then provide the
-symbol neighborhood and likely blast radius before an agent edits code.
+Follow-up GitNexus commands such as `context` and `impact` provide the symbol
+neighborhood and likely blast radius before an agent edits code.
 
 ## Optional: OpenHands Hooks
 
