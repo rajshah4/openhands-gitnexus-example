@@ -1,8 +1,14 @@
 # Example: OpenHands + GitNexus On VS Code
 
 This page shows how this repository was used with a large local codebase. The
-example target is VS Code / Code OSS, indexed with GitNexus and queried from
-OpenHands Agent Canvas through MCP.
+example target is [microsoft/vscode](https://github.com/microsoft/vscode), the
+VS Code / Code OSS repository, indexed with GitNexus and queried from OpenHands
+Agent Canvas through MCP.
+
+VS Code is a large TypeScript and Electron codebase with command routing,
+extension activation, localization, workbench services, tests, and shared
+platform utilities. That makes it a useful benchmark for whether repo
+intelligence can find structure instead of only matching text.
 
 The point is not to prove that every query needs a graph. The point is to show
 where a code graph helps an agent start from structure instead of guessing from
@@ -243,31 +249,3 @@ Why it matters:
 
 Text search can show both symbol names. A graph result can show whether the
 symbols are related and what kind of edge connects them.
-
-## A Video-Friendly OpenHands Prompt
-
-Use this as the main live prompt:
-
-```text
-Use GitNexus MCP for repo vscode-benchmark-repo.
-
-1. List repos and report the VS Code index scale.
-2. Query for "extension activation command registration execute command".
-3. Get context for executeCommand, kind Method, file_path
-   src/vs/workbench/services/commands/common/commandService.ts.
-4. Run impact for Function localize in src/vs/nls.ts with upstream direction,
-   maxDepth 2, and summaryOnly true.
-5. Finish with four concise bullets explaining what GitNexus gives OpenHands.
-
-Do not edit files.
-```
-
-The useful story is:
-
-- GitNexus handles the code graph and exposes repo-intelligence tools.
-- OpenHands uses those tools inside the same agent workflow where it can inspect
-  files, plan changes, edit, and validate.
-- The result is not more context for its own sake. It is better structure: a
-  ranked starting point, symbol neighborhood, and blast-radius signal.
-- This is especially useful on a large codebase where plain search is fast but
-  often not decisive.

@@ -66,6 +66,12 @@ Use an existing Agent Canvas instance. This repository does not install or
 launch Agent Canvas; it assumes you already have OpenHands running with an LLM
 configured.
 
+This example uses [microsoft/vscode](https://github.com/microsoft/vscode) as
+the benchmark repository. VS Code / Code OSS is a large TypeScript and Electron
+codebase with command routing, extension activation, localization, workbench
+services, tests, and shared platform utilities, which makes it a useful target
+for graph-backed repo intelligence.
+
 Clone VS Code / Code OSS, or point `VSCODE_REPO_DIR` at an existing checkout:
 
 ```bash
