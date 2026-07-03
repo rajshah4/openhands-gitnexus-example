@@ -33,17 +33,11 @@ hope it landed in the right subsystem.
 
 ## Reproduce The Setup
 
-Copy the environment template:
+Set these values in your terminal:
 
 ```bash
-cp .env.example .env
-```
-
-Set these values in `.env`:
-
-```bash
-VSCODE_REPO_DIR=../example-projects/vscode-benchmark-repo
-GITNEXUS_REPO_ALIAS=vscode-benchmark-repo
+export VSCODE_REPO_DIR=../example-projects/vscode-benchmark-repo
+export GITNEXUS_REPO_ALIAS=vscode-benchmark-repo
 ```
 
 Use an existing VS Code / Code OSS checkout, or clone one into that path:
@@ -51,16 +45,10 @@ Use an existing VS Code / Code OSS checkout, or clone one into that path:
 ```bash
 mkdir -p ../example-projects
 git clone --depth 1 https://github.com/microsoft/vscode.git \
-  ../example-projects/vscode-benchmark-repo
+  "$VSCODE_REPO_DIR"
 ```
 
 Index it with GitNexus:
-
-```bash
-./scripts/index_repo.sh
-```
-
-The script runs GitNexus with a stable alias:
 
 ```bash
 npx -y gitnexus@latest analyze "$VSCODE_REPO_DIR" \
@@ -83,23 +71,11 @@ gitnexus@latest
 mcp
 ```
 
-Verify the MCP path:
-
-```bash
-./scripts/test_gitnexus_mcp.sh
-```
-
-If Agent Canvas is not running at `http://127.0.0.1:8000`, set
-`AGENT_CANVAS_URL` in `.env` before running the smoke test.
-
-Expected smoke-test shape:
+If the Agent Canvas UI has a test action for MCP servers, run it and save the
+server. A healthy setup should expose GitNexus tools such as:
 
 ```text
-ok   OpenHands version: 1.31.0
-ok   GitNexus tools: list_repos, query, cypher, context, impact, trace, ...
-ok   repo: vscode-benchmark-repo files=11454 nodes=249982 edges=966616
-ok   context: Method ...CommandService.executeCommand lines 51-89
-ok   impact: risk=CRITICAL impacted=7963 direct=4328 modules=20
+list_repos, query, context, impact, trace
 ```
 
 ## Query 1: Find A Starting Point

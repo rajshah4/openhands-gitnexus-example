@@ -11,8 +11,8 @@ It shows a small integration pattern:
 - ask OpenHands to use graph-backed repo context before broad manual search
 
 The repository is intentionally small. It contains a worked VS Code / Code OSS
-example, two helper scripts, and an optional OpenHands hook example. It is not a
-fork of GitNexus, OpenHands, or VS Code.
+example and an optional OpenHands hook example. It is not a fork of GitNexus,
+OpenHands, or VS Code.
 
 ## Why This Is Useful
 
@@ -41,10 +41,8 @@ validation.
 | Path | Purpose |
 | --- | --- |
 | `README.md` | Overview and setup. |
-| `.env.example` | Local configuration template. |
 | `.openhands/` | Optional OpenHands hook example. |
 | `examples/` | Worked examples, including VS Code / Code OSS. |
-| `scripts/` | A GitNexus indexing helper and an optional MCP smoke test. |
 
 Local notes, personal environment files, cloned repositories, and scratch
 outputs belong in ignored paths such as `.local/`, `.env`, and
@@ -60,43 +58,33 @@ outputs belong in ignored paths such as `.local/`, `.env`, and
 
 Optional tools:
 
-- `curl` and `jq` for the MCP smoke test
 - `rg` / ripgrep for the plain-text search comparison
 
 ## Quick Start
-
-Copy the local configuration template:
-
-```bash
-cp .env.example .env
-```
-
-Clone VS Code / Code OSS, or point `VSCODE_REPO_DIR` in `.env` at an existing
-checkout:
-
-```bash
-mkdir -p ../example-projects
-git clone --depth 1 https://github.com/microsoft/vscode.git \
-  ../example-projects/vscode-benchmark-repo
-```
-
-Index the repository with GitNexus:
-
-```bash
-./scripts/index_repo.sh
-```
 
 Use an existing Agent Canvas instance. This repository does not install or
 launch Agent Canvas; it assumes you already have OpenHands running with an LLM
 configured.
 
-For the optional smoke test, Agent Canvas should be reachable at:
+Clone VS Code / Code OSS, or point `VSCODE_REPO_DIR` at an existing checkout:
 
-```text
-http://localhost:8000
+```bash
+export VSCODE_REPO_DIR=../example-projects/vscode-benchmark-repo
+export GITNEXUS_REPO_ALIAS=vscode-benchmark-repo
+
+mkdir -p ../example-projects
+git clone --depth 1 https://github.com/microsoft/vscode.git \
+  "$VSCODE_REPO_DIR"
 ```
 
-If your Agent Canvas runs somewhere else, set `AGENT_CANVAS_URL` in `.env`.
+Index the repository with GitNexus:
+
+```bash
+npx -y gitnexus@latest analyze "$VSCODE_REPO_DIR" \
+  --name "$GITNEXUS_REPO_ALIAS" \
+  --skip-embeddings \
+  --skills
+```
 
 ## Configure GitNexus MCP In Agent Canvas
 
@@ -119,16 +107,8 @@ mcp
 
 If the UI has a test action, run it and save the server.
 
-You can also smoke test the released OpenHands + GitNexus MCP path from this
-repo after Agent Canvas is running:
-
-```bash
-./scripts/test_gitnexus_mcp.sh
-```
-
-The smoke test uses Agent Canvas' local MCP test endpoint. It verifies GitNexus
-tool discovery, calls `context` with `kind: "Method"`, and calls `impact` with
-`kind: "Function"` against the VS Code example.
+At that point, start prompting OpenHands to use GitNexus MCP before broad manual
+search. The VS Code example below gives concrete prompts and expected results.
 
 ## OpenHands MCP Compatibility Note
 
