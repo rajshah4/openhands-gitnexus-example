@@ -9,11 +9,18 @@ if [ -f "$EXAMPLE_ROOT/.env" ]; then
   set +a
 fi
 WORKSPACE_ROOT="$(cd "$EXAMPLE_ROOT/.." && pwd)"
-PROJECTS_DIR="${PROJECTS_DIR:-$WORKSPACE_ROOT/example-projects}"
-AGENT_CANVAS_DIR="${AGENT_CANVAS_DIR:-$WORKSPACE_ROOT/openhands-agent-canvas}"
-SOFTWARE_AGENT_SDK_DIR="${SOFTWARE_AGENT_SDK_DIR:-$PROJECTS_DIR/software-agent-sdk}"
-INSTALL_AGENT_CANVAS_DEPS="${INSTALL_AGENT_CANVAS_DEPS:-0}"
-USE_SOURCE="${USE_SOURCE:-0}"
+
+resolve_path() {
+  case "$1" in
+    /*) printf '%s\n' "$1" ;;
+    *) printf '%s\n' "$EXAMPLE_ROOT/$1" ;;
+  esac
+}
+
+PROJECTS_DIR="$(resolve_path "${PROJECTS_DIR:-$WORKSPACE_ROOT/example-projects}")"
+VSCODE_REPO_DIR="$(resolve_path "${VSCODE_REPO_DIR:-$PROJECTS_DIR/vscode-benchmark-repo}")"
+VSCODE_REMOTE_URL="${VSCODE_REMOTE_URL:-https://github.com/microsoft/vscode.git}"
+VSCODE_CLONE_DEPTH="${VSCODE_CLONE_DEPTH:-1}"
 
 require_command() {
   local name="$1"
@@ -24,46 +31,27 @@ require_command() {
 }
 
 require_command git
-require_command node
-require_command npm
-require_command uv
 
-mkdir -p "$PROJECTS_DIR"
+mkdir -p "$(dirname "$VSCODE_REPO_DIR")"
 
-if [ "$USE_SOURCE" = "1" ]; then
-  if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
-    echo "Using existing Agent Canvas checkout:"
-    echo "  $AGENT_CANVAS_DIR"
-  else
-    echo "Cloning OpenHands/agent-canvas into:"
-    echo "  $AGENT_CANVAS_DIR"
-    git clone --depth 1 https://github.com/OpenHands/agent-canvas.git "$AGENT_CANVAS_DIR"
-  fi
+if [ -d "$VSCODE_REPO_DIR/.git" ]; then
+  echo "Using existing VS Code / Code OSS checkout:"
+  echo "  $VSCODE_REPO_DIR"
+elif [ -e "$VSCODE_REPO_DIR" ]; then
+  echo "Path exists but is not a git checkout:"
+  echo "  $VSCODE_REPO_DIR"
+  echo
+  echo "Set VSCODE_REPO_DIR in .env to an existing repository, or remove the path and rerun."
+  exit 1
 else
-  echo "Skipping Agent Canvas source checkout. The default start path uses the"
-  echo "published @openhands/agent-canvas package through npx."
-fi
-
-if [ -d "$SOFTWARE_AGENT_SDK_DIR/.git" ]; then
-  echo "Using existing software-agent-sdk checkout:"
-  echo "  $SOFTWARE_AGENT_SDK_DIR"
-else
-  echo "Cloning OpenHands/software-agent-sdk into:"
-  echo "  $SOFTWARE_AGENT_SDK_DIR"
-  git clone --depth 1 https://github.com/OpenHands/software-agent-sdk.git "$SOFTWARE_AGENT_SDK_DIR"
-fi
-
-if [ "$USE_SOURCE" = "1" ] && [ "$INSTALL_AGENT_CANVAS_DEPS" = "1" ]; then
-  echo "Installing Agent Canvas dependencies from source checkout..."
-  npm install --prefix "$AGENT_CANVAS_DIR"
-elif [ "$USE_SOURCE" = "1" ]; then
-  echo "Skipping npm install. Set INSTALL_AGENT_CANVAS_DEPS=1 to install source dependencies."
-else
-  echo "No source dependencies needed for the published package path."
+  echo "Cloning VS Code / Code OSS into:"
+  echo "  $VSCODE_REPO_DIR"
+  git clone --depth "$VSCODE_CLONE_DEPTH" "$VSCODE_REMOTE_URL" "$VSCODE_REPO_DIR"
 fi
 
 echo
 echo "Setup complete."
 echo "Next:"
+echo "  ./scripts/check_example.sh"
 echo "  ./scripts/index_repos.sh"
 echo "  ./scripts/start_agent_canvas.sh"

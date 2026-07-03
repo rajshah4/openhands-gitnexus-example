@@ -46,12 +46,11 @@ VSCODE_REPO_DIR=../example-projects/vscode-benchmark-repo
 GITNEXUS_REPO_ALIAS=vscode-benchmark-repo
 ```
 
-Use an existing VS Code / Code OSS checkout, or clone one into that path. For
-example:
+Use an existing VS Code / Code OSS checkout, or let the helper clone one into
+that path:
 
 ```bash
-mkdir -p ../example-projects
-git clone https://github.com/microsoft/vscode.git ../example-projects/vscode-benchmark-repo
+./scripts/setup_example.sh
 ```
 
 Index it with GitNexus:
@@ -134,6 +133,9 @@ To compare plain text search with GitNexus from this repo:
 ./scripts/compare_query.sh "$GITNEXUS_REPO_ALIAS" "$VSCODE_REPO_DIR" \
   "extension activation command registration execute command"
 ```
+
+The same helper works for another local repository if you pass that repository's
+GitNexus alias and filesystem path.
 
 In our local run, plain search had no exact phrase matches and fell back to
 loose token hits. GitNexus returned the command-service entry point above.

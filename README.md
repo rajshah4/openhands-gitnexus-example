@@ -12,8 +12,8 @@ It shows three integration patterns:
   an agent turn starts
 
 The repository is intentionally small. It contains setup scripts, reusable
-prompts, and a worked VS Code example. It is not a fork of GitNexus, OpenHands,
-or VS Code.
+prompts, and a worked VS Code / Code OSS example. It is not a fork of
+GitNexus, OpenHands, or VS Code.
 
 ## Why This Is Useful
 
@@ -33,7 +33,7 @@ validation.
 
 1. Start OpenHands Agent Canvas locally.
 2. Add GitNexus as a custom MCP server.
-3. Index one or more local repositories with GitNexus.
+3. Index a local repository with GitNexus.
 4. Ask OpenHands to use GitNexus before broad manual search.
 5. Walk through a VS Code example that compares plain search with GitNexus.
 6. Optionally inspect the included OpenHands hook pattern.
@@ -59,6 +59,9 @@ outputs belong in ignored paths such as `.local/`, `.env`, and
 - `npm` / `npx`
 - `uv`
 - `git`
+- `curl`
+- `jq`
+- `rg` / ripgrep
 - OpenHands Agent Canvas backed by OpenHands `1.31.0` or newer
 - an LLM configured in Agent Canvas
 
@@ -76,14 +79,16 @@ Check local prerequisites:
 ./scripts/check_example.sh
 ```
 
-Optionally clone the reference OpenHands repositories if you want to index them
-as local GitNexus targets:
+Prepare the VS Code / Code OSS checkout used by the worked example:
 
 ```bash
 ./scripts/setup_example.sh
 ```
 
-Index the repositories with GitNexus:
+If you already have a checkout, set `VSCODE_REPO_DIR` in `.env` to that path
+instead.
+
+Index the repository with GitNexus:
 
 ```bash
 ./scripts/index_repos.sh
@@ -184,6 +189,9 @@ The quick comparison helper is:
 ./scripts/compare_query.sh vscode-benchmark-repo "$VSCODE_REPO_DIR" \
   "extension activation command registration execute command"
 ```
+
+To use the same helper on another repository, pass that repository's GitNexus
+alias and local path.
 
 In the local run this question produced:
 

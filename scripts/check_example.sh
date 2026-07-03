@@ -9,12 +9,20 @@ if [ -f "$EXAMPLE_ROOT/.env" ]; then
   set +a
 fi
 WORKSPACE_ROOT="$(cd "$EXAMPLE_ROOT/.." && pwd)"
-PROJECTS_DIR="${PROJECTS_DIR:-$WORKSPACE_ROOT/example-projects}"
-AGENT_CANVAS_DIR="${AGENT_CANVAS_DIR:-$WORKSPACE_ROOT/openhands-agent-canvas}"
-SOFTWARE_AGENT_SDK_DIR="${SOFTWARE_AGENT_SDK_DIR:-$PROJECTS_DIR/software-agent-sdk}"
-USE_SOURCE="${USE_SOURCE:-0}"
+
+resolve_path() {
+  case "$1" in
+    /*) printf '%s\n' "$1" ;;
+    *) printf '%s\n' "$EXAMPLE_ROOT/$1" ;;
+  esac
+}
+
+PROJECTS_DIR="$(resolve_path "${PROJECTS_DIR:-$WORKSPACE_ROOT/example-projects}")"
+VSCODE_REPO_DIR="$(resolve_path "${VSCODE_REPO_DIR:-$PROJECTS_DIR/vscode-benchmark-repo}")"
+GITNEXUS_REPO_ALIAS="${GITNEXUS_REPO_ALIAS:-vscode-benchmark-repo}"
 AGENT_CANVAS_PACKAGE="${AGENT_CANVAS_PACKAGE:-@openhands/agent-canvas@latest}"
 OH_AGENT_SERVER_VERSION="${OH_AGENT_SERVER_VERSION:-1.31.0}"
+agent_canvas_running=0
 
 missing=0
 
@@ -36,6 +44,9 @@ check_command node
 check_command npm
 check_command uv
 check_command npx
+check_command jq
+check_command curl
+check_command rg
 
 echo
 
@@ -50,50 +61,19 @@ fi
 
 echo
 
-agent_canvas_ready=1
-sdk_ready=0
-agent_canvas_indexed=0
-sdk_indexed=0
+echo "ok   agent-canvas published package path: npx $AGENT_CANVAS_PACKAGE"
+echo "ok   openhands-agent-server version: $OH_AGENT_SERVER_VERSION"
 
-if [ "$USE_SOURCE" = "1" ]; then
-  agent_canvas_ready=0
-  if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
-    echo "ok   agent-canvas source checkout: $AGENT_CANVAS_DIR"
-    agent_canvas_ready=1
-  else
-    echo "miss agent-canvas source checkout: $AGENT_CANVAS_DIR"
-  fi
+if [ -d "$VSCODE_REPO_DIR/.git" ]; then
+  echo "ok   VS Code example checkout: $VSCODE_REPO_DIR"
 else
-  echo "ok   agent-canvas published package path: npx $AGENT_CANVAS_PACKAGE"
-  echo "ok   openhands-agent-server version: $OH_AGENT_SERVER_VERSION"
-  if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
-    echo "info optional agent-canvas checkout also exists: $AGENT_CANVAS_DIR"
-  fi
+  echo "info VS Code example checkout not found yet: $VSCODE_REPO_DIR"
 fi
 
-if [ -d "$SOFTWARE_AGENT_SDK_DIR/.git" ]; then
-  echo "ok   software-agent-sdk checkout: $SOFTWARE_AGENT_SDK_DIR"
-  sdk_ready=1
+if [ -d "$VSCODE_REPO_DIR/.gitnexus" ]; then
+  echo "ok   GitNexus index found for $GITNEXUS_REPO_ALIAS"
 else
-  echo "info software-agent-sdk checkout not found yet: $SOFTWARE_AGENT_SDK_DIR"
-fi
-
-if [ -d "$AGENT_CANVAS_DIR/.git" ]; then
-  if [ -d "$AGENT_CANVAS_DIR/.gitnexus" ]; then
-    echo "ok   GitNexus index found for agent-canvas"
-    agent_canvas_indexed=1
-  else
-    echo "info GitNexus index not found for agent-canvas"
-  fi
-else
-  agent_canvas_indexed=1
-fi
-
-if [ -d "$SOFTWARE_AGENT_SDK_DIR/.gitnexus" ]; then
-  echo "ok   GitNexus index found for software-agent-sdk"
-  sdk_indexed=1
-else
-  echo "info GitNexus index not found for software-agent-sdk"
+  echo "info GitNexus index not found for $GITNEXUS_REPO_ALIAS"
 fi
 
 echo
@@ -101,14 +81,9 @@ echo
 if command -v lsof >/dev/null 2>&1; then
   if lsof -nP -iTCP:8000 -sTCP:LISTEN >/dev/null 2>&1; then
     echo "info port 8000 is already in use, likely Agent Canvas or another local app"
+    agent_canvas_running=1
   else
     echo "ok   port 8000 is free for Agent Canvas"
-  fi
-
-  if lsof -nP -iTCP:4747 -sTCP:LISTEN >/dev/null 2>&1; then
-    echo "info port 4747 is already in use, likely GitNexus serve"
-  else
-    echo "ok   port 4747 is free for optional GitNexus visual backend"
   fi
 fi
 
@@ -120,10 +95,12 @@ if [ "$missing" -ne 0 ]; then
 fi
 
 echo "Preflight complete."
-if [ "$agent_canvas_ready" -eq 0 ] || [ "$sdk_ready" -eq 0 ]; then
+if [ ! -d "$VSCODE_REPO_DIR/.git" ]; then
   echo "Next: ./scripts/setup_example.sh"
-elif [ "$agent_canvas_indexed" -eq 0 ] || [ "$sdk_indexed" -eq 0 ]; then
+elif [ ! -d "$VSCODE_REPO_DIR/.gitnexus" ]; then
   echo "Next: ./scripts/index_repos.sh"
+elif [ "$agent_canvas_running" -eq 1 ]; then
+  echo "Next: ./scripts/test_gitnexus_mcp.sh"
 else
   echo "Next: ./scripts/start_agent_canvas.sh"
 fi
