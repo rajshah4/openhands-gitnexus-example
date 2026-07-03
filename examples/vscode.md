@@ -46,17 +46,18 @@ VSCODE_REPO_DIR=../example-projects/vscode-benchmark-repo
 GITNEXUS_REPO_ALIAS=vscode-benchmark-repo
 ```
 
-Use an existing VS Code / Code OSS checkout, or let the helper clone one into
-that path:
+Use an existing VS Code / Code OSS checkout, or clone one into that path:
 
 ```bash
-./scripts/setup_example.sh
+mkdir -p ../example-projects
+git clone --depth 1 https://github.com/microsoft/vscode.git \
+  ../example-projects/vscode-benchmark-repo
 ```
 
 Index it with GitNexus:
 
 ```bash
-./scripts/index_repos.sh
+./scripts/index_repo.sh
 ```
 
 The script runs GitNexus with a stable alias:
@@ -68,11 +69,8 @@ npx -y gitnexus@latest analyze "$VSCODE_REPO_DIR" \
   --skills
 ```
 
-Start Agent Canvas:
-
-```bash
-./scripts/start_agent_canvas.sh
-```
+Open your existing Agent Canvas instance. It should be backed by OpenHands
+`1.31.0` or newer for the GitNexus MCP `kind` argument path.
 
 Then add GitNexus as a custom stdio MCP server in Agent Canvas:
 
@@ -90,6 +88,9 @@ Verify the MCP path:
 ```bash
 ./scripts/test_gitnexus_mcp.sh
 ```
+
+If Agent Canvas is not running at `http://127.0.0.1:8000`, set
+`AGENT_CANVAS_URL` in `.env` before running the smoke test.
 
 Expected smoke-test shape:
 
@@ -127,15 +128,23 @@ code target that already matches the repository structure. OpenHands can then
 open the right file first instead of spending the early turn sifting through
 loose token hits.
 
-To compare plain text search with GitNexus from this repo:
+To compare plain text search with GitNexus from this repo, run the plain search:
 
 ```bash
-./scripts/compare_query.sh "$GITNEXUS_REPO_ALIAS" "$VSCODE_REPO_DIR" \
+rg -n -i --fixed-strings \
+  "extension activation command registration execute command" \
+  "$VSCODE_REPO_DIR"
+```
+
+Then run the GitNexus query:
+
+```bash
+npx -y gitnexus@latest query -r "$GITNEXUS_REPO_ALIAS" \
   "extension activation command registration execute command"
 ```
 
-The same helper works for another local repository if you pass that repository's
-GitNexus alias and filesystem path.
+The same pattern works for another local repository if you index that repository
+with its own GitNexus alias.
 
 In our local run, plain search had no exact phrase matches and fell back to
 loose token hits. GitNexus returned the command-service entry point above.

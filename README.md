@@ -4,16 +4,15 @@ This repository is a practical example for people who want to use
 [GitNexus](https://github.com/abhigyanpatwari/GitNexus) with
 [OpenHands Agent Canvas](https://github.com/OpenHands/agent-canvas).
 
-It shows three integration patterns:
+It shows a small integration pattern:
 
-- connect GitNexus to OpenHands through MCP
-- run GitNexus CLI commands that help an agent orient in a codebase
-- optionally use an OpenHands workspace hook to inject repository context before
-  an agent turn starts
+- index a local repository with GitNexus
+- connect GitNexus to an existing OpenHands Agent Canvas through MCP
+- ask OpenHands to use graph-backed repo context before broad manual search
 
-The repository is intentionally small. It contains setup scripts, reusable
-prompts, and a worked VS Code / Code OSS example. It is not a fork of
-GitNexus, OpenHands, or VS Code.
+The repository is intentionally small. It contains a worked VS Code / Code OSS
+example, two helper scripts, and an optional OpenHands hook example. It is not a
+fork of GitNexus, OpenHands, or VS Code.
 
 ## Why This Is Useful
 
@@ -31,12 +30,11 @@ validation.
 
 ## What This Example Covers
 
-1. Start OpenHands Agent Canvas locally.
-2. Add GitNexus as a custom MCP server.
-3. Index a local repository with GitNexus.
+1. Use an existing OpenHands Agent Canvas instance.
+2. Index a local repository with GitNexus.
+3. Add GitNexus as a custom MCP server.
 4. Ask OpenHands to use GitNexus before broad manual search.
 5. Walk through a VS Code example that compares plain search with GitNexus.
-6. Optionally inspect the included OpenHands hook pattern.
 
 ## Repository Layout
 
@@ -46,8 +44,7 @@ validation.
 | `.env.example` | Local configuration template. |
 | `.openhands/` | Optional OpenHands hook example. |
 | `examples/` | Worked examples, including VS Code / Code OSS. |
-| `prompts/` | Reusable OpenHands prompts that ask the agent to use GitNexus context. |
-| `scripts/` | Setup, preflight, indexing, and startup helpers. |
+| `scripts/` | A GitNexus indexing helper and an optional MCP smoke test. |
 
 Local notes, personal environment files, cloned repositories, and scratch
 outputs belong in ignored paths such as `.local/`, `.env`, and
@@ -57,13 +54,14 @@ outputs belong in ignored paths such as `.local/`, `.env`, and
 
 - Node.js `22.12.x` or newer
 - `npm` / `npx`
-- `uv`
 - `git`
-- `curl`
-- `jq`
-- `rg` / ripgrep
 - OpenHands Agent Canvas backed by OpenHands `1.31.0` or newer
 - an LLM configured in Agent Canvas
+
+Optional tools:
+
+- `curl` and `jq` for the MCP smoke test
+- `rg` / ripgrep for the plain-text search comparison
 
 ## Quick Start
 
@@ -73,43 +71,32 @@ Copy the local configuration template:
 cp .env.example .env
 ```
 
-Check local prerequisites:
+Clone VS Code / Code OSS, or point `VSCODE_REPO_DIR` in `.env` at an existing
+checkout:
 
 ```bash
-./scripts/check_example.sh
+mkdir -p ../example-projects
+git clone --depth 1 https://github.com/microsoft/vscode.git \
+  ../example-projects/vscode-benchmark-repo
 ```
-
-Prepare the VS Code / Code OSS checkout used by the worked example:
-
-```bash
-./scripts/setup_example.sh
-```
-
-If you already have a checkout, set `VSCODE_REPO_DIR` in `.env` to that path
-instead.
 
 Index the repository with GitNexus:
 
 ```bash
-./scripts/index_repos.sh
+./scripts/index_repo.sh
 ```
 
-Start Agent Canvas from the published package:
+Use an existing Agent Canvas instance. This repository does not install or
+launch Agent Canvas; it assumes you already have OpenHands running with an LLM
+configured.
 
-```bash
-./scripts/start_agent_canvas.sh
-```
-
-The default Agent Canvas package is `@openhands/agent-canvas@latest`. The script
-also sets `OH_AGENT_SERVER_VERSION=1.31.0` because the MCP compatibility fix
-lives in the OpenHands Agent Server / SDK package. To pin either value, set
-`AGENT_CANVAS_PACKAGE` or `OH_AGENT_SERVER_VERSION` in `.env`.
-
-Agent Canvas should be available at:
+For the optional smoke test, Agent Canvas should be reachable at:
 
 ```text
 http://localhost:8000
 ```
+
+If your Agent Canvas runs somewhere else, set `AGENT_CANVAS_URL` in `.env`.
 
 ## Configure GitNexus MCP In Agent Canvas
 
@@ -158,18 +145,6 @@ versions could collide with their internal discriminator field.
 With OpenHands `1.31.0` or newer, the standard GitNexus MCP configuration above
 should be enough.
 
-## Prompt OpenHands To Use GitNexus
-
-Use these prompts as starting points:
-
-1. [Repo Orientation](prompts/01-repo-orientation.md)
-2. [Blast Radius](prompts/02-blast-radius.md)
-3. [Architecture Watch](prompts/03-architecture-watch.md)
-
-They are written to work whether GitNexus MCP is available or not. When GitNexus
-is available, the prompts ask OpenHands to use it before falling back to manual
-file inspection.
-
 ## Worked Example: VS Code
 
 See [examples/vscode.md](examples/vscode.md) for the full setup and query
@@ -183,15 +158,20 @@ The example shows how to:
 - inspect `CommandService.executeCommand` with symbol context
 - run blast-radius analysis on `localize`
 
-The quick comparison helper is:
+The plain-text side of the comparison is just ripgrep:
 
 ```bash
-./scripts/compare_query.sh vscode-benchmark-repo "$VSCODE_REPO_DIR" \
-  "extension activation command registration execute command"
+rg -n -i --fixed-strings \
+  "extension activation command registration execute command" \
+  "$VSCODE_REPO_DIR"
 ```
 
-To use the same helper on another repository, pass that repository's GitNexus
-alias and local path.
+The GitNexus side asks for a ranked repo-intelligence result:
+
+```bash
+npx -y gitnexus@latest query -r "$GITNEXUS_REPO_ALIAS" \
+  "extension activation command registration execute command"
+```
 
 In the local run this question produced:
 

@@ -33,8 +33,8 @@ if [ ! -d "$REPO_PATH/.git" ]; then
   echo "Repository checkout not found:"
   echo "  $REPO_PATH"
   echo
-  echo "Run ./scripts/setup_example.sh for the VS Code example, or pass a repository path:"
-  echo "  ./scripts/index_repos.sh /path/to/repo repo-alias"
+  echo "Clone a repository first, or pass a repository path:"
+  echo "  ./scripts/index_repo.sh /path/to/repo repo-alias"
   exit 1
 fi
 
