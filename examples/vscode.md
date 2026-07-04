@@ -66,6 +66,13 @@ npx -y gitnexus@latest analyze "$VSCODE_REPO_DIR" \
 Open your existing Agent Canvas instance. It should be backed by OpenHands
 `1.31.0` or newer for the GitNexus MCP `kind` argument path.
 
+For local Agent Canvas source checkouts whose default Agent Server pin is older,
+start the stack with:
+
+```bash
+OH_AGENT_SERVER_VERSION=1.31.0 npm run dev
+```
+
 Then add GitNexus as a custom stdio MCP server in Agent Canvas:
 
 ```text

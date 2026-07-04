@@ -66,6 +66,13 @@ Use an existing Agent Canvas instance. This repository does not install or
 launch Agent Canvas; it assumes you already have OpenHands running with an LLM
 configured.
 
+If you are running Agent Canvas locally from source and its default Agent Server
+pin is older than `1.31.0`, launch it with:
+
+```bash
+OH_AGENT_SERVER_VERSION=1.31.0 npm run dev
+```
+
 This example uses [microsoft/vscode](https://github.com/microsoft/vscode) as
 the benchmark repository. VS Code / Code OSS is a large TypeScript and Electron
 codebase with command routing, extension activation, localization, workbench
